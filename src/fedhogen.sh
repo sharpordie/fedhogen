@@ -470,10 +470,11 @@ main() {
 
 	# Handle functions
 	factors=(
-		"update_android_studio canary"
+		"update_android_studio"
+		# "update_android_studio canary"
 		"update_chromium"
 		"update_git main sharpordie@outlook.com sharpordie"
-		"update_vscode"
+		"update_vscodium"
 		"update_flutter"
 		"update_jdownloader"
 		"update_appearance"
