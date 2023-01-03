@@ -113,12 +113,8 @@ update_chromium() {
 	sudo dnf install -y curl jq ydotool
 
 	# Update package
-	sudo dnf install -y "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm"
-	sudo dnf update -y && sudo dnf install -y chromium-freeworld
-
-	# Change desktop
-	desktop="/usr/share/applications/chromium-freeworld.desktop"
-	sudo sed -i "s/Name=.*/Name=Chromium/" "$desktop"
+	sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+	flatpak install -y flathub com.github.Eloston.UngoogledChromium
 
 	# Change environment
 	configs="$HOME/.bashrc"
@@ -153,14 +149,19 @@ update_flutter() {
 	fi
 
 	# Finish installation
+	dart --disable-analytics
 	flutter config --no-analytics
 	flutter precache && flutter upgrade
+	yes | flutter doctor --android-licenses
 
 	# TODO: Update android-studio extensions
-	# TODO: Update vscode extensions
+	# update_jetbrains_plugin "AndroidStudio" "6351"  # Dart
+	# update_jetbrains_plugin "AndroidStudio" "9212"  # Flutter
 
-	# Accept licenses
-	yes | flutter doctor --android-licenses
+	# Update vscode extensions
+	code --install-extension "dart-code.flutter" &>/dev/null
+	code --install-extension "RichardCoutts.mvvm-plus" &>/dev/null
+	
 
 }
 
@@ -359,6 +360,82 @@ update_jetbrains_plugin() {
 	# Gather topmost directory
 	deposit=$(find $HOME/.config/*/*$pattern* -maxdepth 0 2>/dev/null | sort -r | head -1)
 	[[ -d $deposit ]] || return 0
+
+}
+
+update_scrcpy() {
+
+	# Update package
+	sudo dnf copr enable -y zeno/scrcpy
+	sudo dnf install -y scrcpy
+
+}
+
+update_system() {
+
+	# Change extensions
+	gnome-extensions disable background-logo@fedorahosted.org
+	gnome-extensions enable places-menu@gnome-shell-extensions.gcampax.github.com
+
+	# Change font rendering
+	gsettings set org.gnome.desktop.interface font-antialiasing "rgba"
+	gsettings set org.gnome.desktop.interface font-hinting "slight"
+	# gsettings set org.gnome.desktop.interface font-hinting "full"
+
+	# Change font
+	sudo dnf install -y cascadia-fonts-all
+	gsettings set org.gnome.desktop.interface monospace-font-name "Cascadia Mono PL Semi-Bold 10"
+	# gsettings set org.gnome.desktop.interface monospace-font-name "Roboto Mono Medium 10"
+	# gsettings set org.gnome.desktop.interface monospace-font-name "Source Code Pro Semi-Bold 10"
+
+	# Change icons
+	sudo dnf copr enable -y dusansimic/themes
+	sudo dnf install -y morewaita-icon-theme
+	gsettings set org.gnome.desktop.interface icon-theme "MoreWaita"
+	
+}
+
+update_vscodium() {
+
+	# Update dependencies
+	sudo dnf install -y cascadia-fonts-all jq moreutils
+
+	# Update package
+	deposit="/etc/yum.repos.d/vscodium.repo"
+	sudo rpmkeys --import "https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/-/raw/master/pub.gpg"
+	echo "[gitlab.com_paulcarroty_vscodium_repo]" | sudo tee "$deposit"
+	echo "name=download.vscodium.com" | sudo tee -a "$deposit"
+	echo "baseurl=https://download.vscodium.com/rpms/" | sudo tee -a "$deposit"
+	echo "enabled=1" | sudo tee -a "$deposit"
+	echo "gpgcheck=1" | sudo tee -a "$deposit"
+	echo "repo_gpgcheck=1" | sudo tee -a "$deposit"
+	echo "gpgkey=https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/-/raw/master/pub.gpg" | sudo tee -a "$deposit"
+	echo "metadata_expire=1h" | sudo tee -a "$deposit"
+	sudo dnf install -y codium
+
+	# Update some extensions.
+	codium --install-extension "foxundermoon.shell-format"
+	codium --install-extension "github.github-vscode-theme"
+
+	# Change settings
+	configs="$HOME/.config/VSCodium/User/settings.json"
+	[[ -s "$configs" ]] || echo "{}" >"$configs"
+	jq '."editor.fontFamily" = "Cascadia Code, monospace"' "$configs" | sponge "$configs"
+	jq '."editor.fontSize" = 13' "$configs" | sponge "$configs"
+	jq '."editor.lineHeight" = 32' "$configs" | sponge "$configs"
+	jq '."security.workspace.trust.enabled" = false' "$configs" | sponge "$configs"
+	jq '."telemetry.telemetryLevel" = "crash"' "$configs" | sponge "$configs"
+	jq '."update.mode" = "none"' "$configs" | sponge "$configs"
+	jq '."window.menuBarVisibility" = "toggle"' "$configs" | sponge "$configs"
+	jq '."workbench.colorTheme" = "GitHub Dark Default"' "$configs" | sponge "$configs"
+
+	# Change inotify
+	configs="/etc/sysctl.conf"
+	if ! grep -q "fs.inotify.max_user_watches" "$configs"; then
+		[[ -z $(tail -1 "$configs") ]] || echo "" | sudo tee -a "$configs"
+		echo "fs.inotify.max_user_watches=524288" | sudo tee -a "$configs"
+		sudo sysctl -p &>/dev/null
+	fi
 
 }
 
