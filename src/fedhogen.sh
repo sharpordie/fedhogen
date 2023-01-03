@@ -477,7 +477,7 @@ main() {
 		"update_vscodium"
 		"update_flutter"
 		"update_jdownloader"
-		"update_appearance"
+		"update_system"
 	)
 
 	# Output progress
