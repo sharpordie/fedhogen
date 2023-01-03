@@ -51,8 +51,8 @@ update_android_studio() {
 	address="https://aur.archlinux.org/packages/$payload"
 	pattern="android-studio.* \K(\d.+)(?=-)"
 	version=$(curl -s "$address" | grep -oP "$pattern" | head -1)
-	current=$()
-	updated=true
+	current=""
+	updated=false
 	if [[ $updated == false ]]; then
 		address="https://dl.google.com/dl/android/studio/ide-zips/$version/android-studio-$version-linux.tar.gz"
 		package="$(mktemp -d)/$(basename "$address")"
