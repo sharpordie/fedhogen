@@ -379,8 +379,8 @@ update_system() {
 
 	# Change font rendering
 	gsettings set org.gnome.desktop.interface font-antialiasing "rgba"
-	gsettings set org.gnome.desktop.interface font-hinting "slight"
-	# gsettings set org.gnome.desktop.interface font-hinting "full"
+	# gsettings set org.gnome.desktop.interface font-hinting "slight"
+	gsettings set org.gnome.desktop.interface font-hinting "full"
 
 	# Change font
 	sudo dnf install -y cascadia-fonts-all
@@ -389,9 +389,13 @@ update_system() {
 	# gsettings set org.gnome.desktop.interface monospace-font-name "Source Code Pro Semi-Bold 10"
 
 	# Change icons
-	sudo dnf copr enable -y dusansimic/themes
-	sudo dnf install -y morewaita-icon-theme
-	gsettings set org.gnome.desktop.interface icon-theme "MoreWaita"
+	# sudo dnf copr enable -y dusansimic/themes
+	# sudo dnf install -y morewaita-icon-theme
+	# gsettings set org.gnome.desktop.interface icon-theme "MoreWaita"
+	sudo dnf install -y papirus-icon-theme
+	gsettings set org.gnome.desktop.interface icon-theme "Papirus"
+
+	# TODO: Enable remote desktop
 	
 }
 
