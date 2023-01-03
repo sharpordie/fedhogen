@@ -92,13 +92,13 @@ update_android_studio() {
 	yes | sdkmanager "platforms;android-33"
 	yes | sdkmanager "sources;android-33"
 	yes | sdkmanager "system-images;android-33;google_apis;x86_64"
-	avdmanager create avd -n "Pixel_3_API_33" -d "pixel_3" -k "system-images;android-33;google_apis;x86_64"
+	avdmanager create avd -n "Pixel_3_API_33" -d "pixel_3" -k "system-images;android-33;google_apis;x86_64" &>/dev/null
 
-	# Change settings
-	update_jetbrains_config "Android" "directory" "$deposit"
-	update_jetbrains_config "Android" "font_size" "14"
-	update_jetbrains_config "Android" "line_size" "1.5"
-	[[ $release = can* ]] && update_jetbrains_config "AndroidPreview" "newest_ui" "true"
+	# TODO: Change settings
+	# update_jetbrains_config "Android" "directory" "$deposit"
+	# update_jetbrains_config "Android" "font_size" "14"
+	# update_jetbrains_config "Android" "line_size" "1.5"
+	# [[ $release = can* ]] && update_jetbrains_config "AndroidPreview" "newest_ui" "true"
 
 }
 
