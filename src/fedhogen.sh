@@ -117,13 +117,13 @@ update_chromium() {
 	flatpak install -y flathub com.github.Eloston.UngoogledChromium
 
 	# Change environment
-	configs="$HOME/.bashrc"
-	if ! grep -q "CHROME_EXECUTABLE" "$configs" 2>/dev/null; then
-		[[ -s "$configs" ]] || touch "$configs"
-		[[ -z $(tail -1 "$configs") ]] || echo "" >>"$configs"
-		echo 'export CHROME_EXECUTABLE="/usr/bin/chromium-freeworld"' >>"$configs"
-		export CHROME_EXECUTABLE="/usr/bin/chromium-freeworld"
-	fi
+	# configs="$HOME/.bashrc"
+	# if ! grep -q "CHROME_EXECUTABLE" "$configs" 2>/dev/null; then
+	# 	[[ -s "$configs" ]] || touch "$configs"
+	# 	[[ -z $(tail -1 "$configs") ]] || echo "" >>"$configs"
+	# 	echo 'export CHROME_EXECUTABLE="/usr/bin/chromium-freeworld"' >>"$configs"
+	# 	export CHROME_EXECUTABLE="/usr/bin/chromium-freeworld"
+	# fi
 
 }
 
@@ -149,9 +149,10 @@ update_flutter() {
 	fi
 
 	# Finish installation
+	flutter channel stable
+	flutter precache && flutter upgrade
 	dart --disable-analytics
 	flutter config --no-analytics
-	flutter precache && flutter upgrade
 	yes | flutter doctor --android-licenses
 
 	# TODO: Update android-studio extensions
@@ -363,6 +364,24 @@ update_jetbrains_plugin() {
 
 }
 
+update_mamba() {
+
+	# Update package
+	present=$([[ -x "$(which mamba)" ]] && echo true || echo false)
+	if [[ $present = false ]]; then
+		curl -LO https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+		sh ./Mambaforge-$(uname)-$(uname -m).sh -b
+		rm ./Mambaforge-$(uname)-$(uname -m).sh
+	fi
+
+	# Update environment
+	~/mambaforge/condabin/conda init
+	~/mambaforge/condabin/mamba init
+	~/mambaforge/condabin/conda config --set auto_activate_base false
+	source ~/.bashrc
+
+}
+
 update_scrcpy() {
 
 	# Update package
@@ -482,6 +501,7 @@ main() {
 		"update_vscodium"
 		"update_flutter"
 		"update_jdownloader"
+		"update_mamba"
 		"update_system"
 	)
 
