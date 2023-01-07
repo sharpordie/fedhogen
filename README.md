@@ -2,7 +2,7 @@
 
 Opinionated post-installation script for Fedora.
 
-# <sup>GALLERY</sup>
+<sup><h1>GALLERY</h1></sup>
 
 <img src="https://fakeimg.pl/852x480/000/fff" width="49.25%"/><img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png" width="1.5%"/><img src="https://fakeimg.pl/852x480/000/fff" width="49.25%"/>
 
