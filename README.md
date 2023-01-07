@@ -4,15 +4,15 @@
 <p>Configuration script for Fedora</p>
 </div><hr>
 
-<h1><samp>OVERVIEW</samp></h1>
+<h2><samp>OVERVIEW</samp></h2>
 
 Opinionated post-installation script for Fedora.
 
 <img src="https://fakeimg.pl/852x480/000/fff" width="49.25%"/><img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png" width="1.5%"/><img src="https://fakeimg.pl/852x480/000/fff" width="49.25%"/>
 
-<h1><samp>GUIDANCE</samp></h1>
+<h2><samp>GUIDANCE</samp></h2>
 
-## Single-command installation
+### Single-command installation
 
 Running this blindly is strongly discouraged.
 
