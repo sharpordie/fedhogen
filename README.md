@@ -1,8 +1,12 @@
+---
+
 <div>
-<a href="../.."><img align="right" height="91" src="https://user-images.githubusercontent.com/72373746/204132526-193bd3df-e3fd-4f33-99e0-eea7972247f8.png" alt="logo"></a>
+<a href="../.."><img align="left" height="91" src="https://user-images.githubusercontent.com/72373746/204132526-193bd3df-e3fd-4f33-99e0-eea7972247f8.png" alt="logo"></a>
 <h1><samp>FEDHOGEN</samp></h1>
 <p>Configuration script for Fedora</p>
 </div>
+
+---
 
 <h2><samp>OVERVIEW</samp></h2>
 
