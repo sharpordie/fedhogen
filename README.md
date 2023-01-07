@@ -1,4 +1,4 @@
-# <samp>FEDHOGEN</samp>
+<h1 align="center"><samp>FEDHOGEN</samp></h1>
 
 ## <samp>PREFACE</samp>
 
