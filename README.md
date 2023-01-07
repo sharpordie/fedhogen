@@ -4,6 +4,10 @@
 <em>CONFIGURATION SCRIPT FOR FEDORA</em>
 <hr></div>
 
+- https://
+
+<!--
+
 ## PREFACE
 
 Opinionated post-installation script for Fedora.
@@ -21,8 +25,6 @@ Running this blindly is strongly discouraged.
 ```shell
 wget -qO- https://raw.githubusercontent.com/sharpordie/fedhogen/main/src/fedhogen.sh | bash
 ```
-
-<!--
 
 ## PROJECT
 
