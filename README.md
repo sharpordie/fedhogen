@@ -1,5 +1,3 @@
-# FEDHOGEN
-
 ## `PREFACE`
 
 Opinionated post-installation script for Fedora.
