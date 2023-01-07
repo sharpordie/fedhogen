@@ -1,8 +1,8 @@
-<hr><div>
+<div><hr>
 <a href="../.."><img align="right" height="91" src="https://user-images.githubusercontent.com/72373746/202393603-e66ea89a-3af1-4c0d-b666-ec86572bebac.png" alt="logo"></a>
 <h1>FEDHOGEN</h1>
 <p>Configuration script for Fedora</p>
-</div><hr>
+</hr></div>
 
 ## <samp>PREFACE</samp>
 
