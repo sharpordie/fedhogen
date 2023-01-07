@@ -379,8 +379,7 @@ update_system() {
 
 	# Change font rendering
 	gsettings set org.gnome.desktop.interface font-antialiasing "rgba"
-	# gsettings set org.gnome.desktop.interface font-hinting "slight"
-	gsettings set org.gnome.desktop.interface font-hinting "full"
+	gsettings set org.gnome.desktop.interface font-hinting "slight"
 
 	# Change font
 	sudo dnf install -y cascadia-fonts-all
@@ -389,14 +388,16 @@ update_system() {
 	# gsettings set org.gnome.desktop.interface monospace-font-name "Source Code Pro Semi-Bold 10"
 
 	# Change icons
-	# sudo dnf copr enable -y dusansimic/themes
-	# sudo dnf install -y morewaita-icon-theme
-	# gsettings set org.gnome.desktop.interface icon-theme "MoreWaita"
 	sudo dnf install -y papirus-icon-theme
 	gsettings set org.gnome.desktop.interface icon-theme "Papirus"
 
-	# TODO: Enable remote desktop
-	
+	# Enable remote desktop
+	systemctl --user enable --now gnome-remote-desktop.service
+	gsettings set org.gnome.desktop.remote-desktop.rdp tls-cert "$HOME/.local/share/gnome-remote-desktop/rdp-tls.crt"
+	gsettings set org.gnome.desktop.remote-desktop.rdp tls-key "$HOME/.local/share/gnome-remote-desktop/rdp-tls.key"
+	gsettings set org.gnome.desktop.remote-desktop.rdp enable true
+	gsettings set org.gnome.desktop.remote-desktop.vnc view-only false
+
 }
 
 update_vscodium() {
