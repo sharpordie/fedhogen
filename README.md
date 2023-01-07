@@ -4,6 +4,12 @@
 <em>CONFIGURATION SCRIPT FOR FEDORA</em>
 <hr></div>
 
+## PREFACE
+## GALLERY
+## PREVIEW
+## STARTER
+## PROJECT
+
 ## OVERVIEW
 
 Opinionated post-installation script for Fedora.
