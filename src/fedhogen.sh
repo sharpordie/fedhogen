@@ -455,8 +455,8 @@ update_mamba() {
 update_nvidia() {
 
 	# Update package
-	sudo dnf install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm"
-	sudo dnf install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
+	sudo dnf install -y "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm"
+	sudo dnf install -y "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
 	sudo dnf upgrade --refresh -y && sudo dnf install -y akmod-nvidia
 
 	# Update cuda
@@ -637,20 +637,22 @@ main() {
 	EOD
 	printf "\n\033[92m%s\033[00m\n\n" "$welcome"
 
+	update_nvidia ; exit
+
 	# Handle functions
 	factors=(
-		# "update_android_studio"
+		"update_android_studio"
 		# "update_android_studio canary"
-		# "update_chromium"
-		# "update_git main sharpordie@outlook.com sharpordie"
+		"update_chromium"
+		"update_git main sharpordie@outlook.com sharpordie"
 		"update_vscode"
 		# "update_vscodium"
-		# "update_flutter"
-		# "update_jdownloader"
-		# "update_mamba"
-		# "update_nvidia"
-		# "update_scrcpy"
-		# "update_system"
+		"update_flutter"
+		"update_jdownloader"
+		"update_mamba"
+		"update_nvidia"
+		"update_scrcpy"
+		"update_system"
 	)
 
 	# Output progress
