@@ -522,6 +522,48 @@ update_system() {
 
 }
 
+update_vscode() {
+
+	# Update dependencies
+	sudo dnf install -y cascadia-fonts-all jq moreutils
+
+	# Update package
+	deposit="/etc/yum.repos.d/vscode.repo"
+	echo "[code]" | sudo tee "$deposit"
+	echo "name=Visual Studio Code" | sudo tee -a "$deposit"
+	echo "baseurl=https://packages.microsoft.com/yumrepos/vscode" | sudo tee -a "$deposit"
+	echo "enabled=1" | sudo tee -a "$deposit"
+	echo "gpgcheck=1" | sudo tee -a "$deposit"
+	echo "gpgkey=https://packages.microsoft.com/keys/microsoft.asc" | sudo tee -a "$deposit"
+	sudo rpm --import "https://packages.microsoft.com/keys/microsoft.asc"
+	sudo dnf install -y code
+
+	# Update extensions
+	code --install-extension "foxundermoon.shell-format"
+	code --install-extension "github.github-vscode-theme"
+
+	# Change settings
+	configs="$HOME/.config/Code/User/settings.json"
+	[[ -s "$configs" ]] || echo "{}" >"$configs"
+	jq '."editor.fontFamily" = "Cascadia Code, monospace"' "$configs" | sponge "$configs"
+	jq '."editor.fontSize" = 13' "$configs" | sponge "$configs"
+	jq '."editor.lineHeight" = 32' "$configs" | sponge "$configs"
+	jq '."security.workspace.trust.enabled" = false' "$configs" | sponge "$configs"
+	jq '."telemetry.telemetryLevel" = "crash"' "$configs" | sponge "$configs"
+	jq '."update.mode" = "none"' "$configs" | sponge "$configs"
+	jq '."window.menuBarVisibility" = "toggle"' "$configs" | sponge "$configs"
+	jq '."workbench.colorTheme" = "GitHub Dark Default"' "$configs" | sponge "$configs"
+
+	# Change inotify
+	configs="/etc/sysctl.conf"
+	if ! grep -q "fs.inotify.max_user_watches" "$configs"; then
+		[[ -z $(tail -1 "$configs") ]] || echo "" | sudo tee -a "$configs"
+		echo "fs.inotify.max_user_watches=524288" | sudo tee -a "$configs"
+		sudo sysctl -p &>/dev/null
+	fi
+
+}
+
 update_vscodium() {
 
 	# Update dependencies
@@ -540,7 +582,7 @@ update_vscodium() {
 	echo "metadata_expire=1h" | sudo tee -a "$deposit"
 	sudo dnf install -y codium
 
-	# Update some extensions.
+	# Update extensions
 	codium --install-extension "foxundermoon.shell-format"
 	codium --install-extension "github.github-vscode-theme"
 
@@ -601,11 +643,12 @@ main() {
 		# "update_android_studio canary"
 		# "update_chromium"
 		# "update_git main sharpordie@outlook.com sharpordie"
+		"update_vscode"
 		# "update_vscodium"
 		# "update_flutter"
 		# "update_jdownloader"
 		# "update_mamba"
-		"update_nvidia"
+		# "update_nvidia"
 		# "update_scrcpy"
 		# "update_system"
 	)
