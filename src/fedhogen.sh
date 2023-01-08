@@ -509,6 +509,22 @@ update_nvidia() {
 
 }
 
+update_quickemu() {
+
+	# Update dependencies
+	sudo dnf install -y bash coreutils edk2-tools genisoimage git grep jq lsb procps python3 qemu
+	sudo dnf install -y sed spice-gtk-tools swtpm unzip usbutils util-linux wget xdg-user-dirs xrandr
+
+	# Update package
+	deposit="/opt/quickemu"
+	sudo git clone https://github.com/wmutschl/quickemu "$deposit"
+	current=$(dirname "$(readlink -f "$0")") && cd "$deposit" && sudo git pull && cd "$current"
+	sudo ln -sf "$deposit/quickemu" "/bin/quickemu" &>/dev/null
+	sudo ln -sf "$deposit/quickget" "/bin/quickget" &>/dev/null
+	source "$HOME/.bashrc"
+
+}
+
 update_scrcpy() {
 
 	# Update package
@@ -560,6 +576,9 @@ update_system() {
 	gsettings set org.gnome.desktop.remote-desktop.rdp tls-key "$HOME/.local/share/gnome-remote-desktop/rdp-tls.key"
 	gsettings set org.gnome.desktop.remote-desktop.rdp enable true
 	gsettings set org.gnome.desktop.remote-desktop.vnc view-only false
+
+	# Remove favorites
+	gsettings set org.gnome.shell favorite-apps "[]"
 
 	# Remove services
 	sudo systemctl disable --now ModemManager.service
@@ -693,6 +712,7 @@ main() {
 		"update_mamba"
 		"update_nvidia"
 		"update_scrcpy"
+		"update_quickemu"
 		"update_system"
 	)
 
