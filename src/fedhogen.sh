@@ -190,13 +190,55 @@ update_chromium() {
 		sleep 1 && for i in $(seq 1 6); do sleep 0.5 && sudo ydotool key 15:1 15:0; done && sleep 1 && sudo ydotool key 28:1 28:0
 		sleep 1 && for i in $(seq 1 3); do sleep 0.5 && sudo ydotool key 108:1 108:0; done && sleep 1 && sudo ydotool key 28:1 28:0
 
+		# Update chromium-web-store
+		website="https://api.github.com/repos/NeverDecaf/chromium-web-store/releases"
+		version=$(curl -s "$website" | jq -r ".[0].tag_name" | tr -d "v")
+		address="https://github.com/NeverDecaf/chromium-web-store/releases/download/v$version/Chromium.Web.Store.crx"
+		update_chromium_extension "$address"
+
+		# Update simple-translate
+		update_chromium_extension "ibplnjkanclpjokhdolnendpplpjiace"
+
+		# Update sponsorblock-for-youtube
+		update_chromium_extension "mnjggcdmjocbbbhaepdhchncahnbgone"
+
+		# Update ublock-origin
+		update_chromium_extension "cjpalhdlnbpafiamejdnhcphjbkeiagm"
+
 	fi
 
 }
 
 update_chromium_extension() {
 
-	payload=${2}
+	# Handle parameters
+	payload=${1}
+
+	# Update dependencies
+	sudo dnf install -y curl ydotool
+
+	# Update extension
+	starter="/var/lib/flatpak/exports/bin/com.github.Eloston.UngoogledChromium"
+	present=$([[ -f "$starter" ]] && echo true || echo false)
+	if [[ $present = true ]]; then
+		flatpak kill com.github.Eloston.UngoogledChromium
+		sudo flatpak override com.github.Eloston.UngoogledChromium --filesystem=/tmp
+		if [ "${payload:0:4}" == "http" ]; then
+			address="$payload"
+			package="$(mktemp -d)/$(basename "$address")"
+		else
+			version="$(flatpak run com.github.Eloston.UngoogledChromium --product-version)"
+			address="https://clients2.google.com/service/update2/crx?response=redirect&acceptformat=crx2,crx3"
+			address="${address}&prodversion=${version}&x=id%3D${payload}%26installsource%3Dondemand%26uc"
+			package="$(mktemp -d)/$payload.crx"
+		fi
+		curl -L "$address" -o "$package" || return 1
+		sleep 1 && (sudo ydotoold &) &>/dev/null
+		sleep 1 && (flatpak run com.github.Eloston.UngoogledChromium "$package" &) &>/dev/null
+		sleep 4 && sudo ydotool key 125:1 103:1 103:0 125:0
+		sleep 2 && sudo ydotool key 108:1 108:0 && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 2 && sudo ydotool key 56:1 62:1 62:0 56:0
+	fi
 
 }
 
@@ -271,7 +313,7 @@ update_jdownloader() {
 
 	# Change desktop
 	desktop="/var/lib/flatpak/exports/share/applications/org.jdownloader.JDownloader.desktop"
-	sudo sed -i 's/Icon=.*/Icon=jdownloader/' "$desktop"
+	sudo sed -i "s/Icon=.*/Icon=jdownloader/" "$desktop"
 
 	# Change settings
 	appdata="$HOME/.var/app/org.jdownloader.JDownloader/data/jdownloader"
@@ -293,6 +335,9 @@ update_jdownloader() {
 	jq ".speedmetervisible = false" "$config1" | sponge "$config1"
 	jq ".defaultdownloadfolder = \"$deposit\"" "$config2" | sponge "$config2"
 	jq ".enabled = false" "$config3" | sponge "$config3"
+
+	# Update chromium extension
+	update_chromium_extension "fbcohnmimjicjdomonkcbcpbpnhggkip"
 
 }
 
@@ -439,16 +484,16 @@ update_mamba() {
 	# Update package
 	present=$([[ -x "$(which mamba)" ]] && echo true || echo false)
 	if [[ $present = false ]]; then
-		curl -LO https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+		curl -LO "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
 		sh ./Mambaforge-$(uname)-$(uname -m).sh -b
 		rm ./Mambaforge-$(uname)-$(uname -m).sh
 	fi
 
 	# Update environment
-	~/mambaforge/condabin/conda init
-	~/mambaforge/condabin/mamba init
-	~/mambaforge/condabin/conda config --set auto_activate_base false
-	source ~/.bashrc
+	$HOME/mambaforge/condabin/conda init
+	$HOME/mambaforge/condabin/mamba init
+	$HOME/mambaforge/condabin/conda config --set auto_activate_base false
+	source $HOME/.bashrc
 
 }
 
@@ -461,7 +506,7 @@ update_nvidia() {
 
 	# Update cuda
 	sudo dnf install -y xorg-x11-drv-nvidia-cuda
-	
+
 }
 
 update_scrcpy() {
@@ -637,16 +682,12 @@ main() {
 	EOD
 	printf "\n\033[92m%s\033[00m\n\n" "$welcome"
 
-	update_nvidia ; exit
-
 	# Handle functions
 	factors=(
 		"update_android_studio"
-		# "update_android_studio canary"
 		"update_chromium"
 		"update_git main sharpordie@outlook.com sharpordie"
 		"update_vscode"
-		# "update_vscodium"
 		"update_flutter"
 		"update_jdownloader"
 		"update_mamba"
