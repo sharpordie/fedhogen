@@ -52,7 +52,7 @@ update_android_studio() {
 	pattern="android-studio.* \K(\d.+)(?=-)"
 	version=$(curl -s "$address" | grep -oP "$pattern" | head -1)
 	current=""
-	updated=false
+	updated=true
 	if [[ $updated == false ]]; then
 		address="https://dl.google.com/dl/android/studio/ide-zips/$version/android-studio-$version-linux.tar.gz"
 		package="$(mktemp -d)/$(basename "$address")"
@@ -83,6 +83,12 @@ update_android_studio() {
 	[[ $release = can* ]] && sudo sed -i "s/Icon=.*/Icon=androidstudio-canary/" "$desktop"
 	[[ $release = can* ]] && sudo sed -i "s/Name=.*/Name=Android Studio Canary/" "$desktop"
 
+	# TODO: Change settings
+	# update_jetbrains_config "Android" "directory" "$deposit"
+	# update_jetbrains_config "Android" "font_size" "14"
+	# update_jetbrains_config "Android" "line_size" "1.5"
+	# [[ $release = can* ]] && update_jetbrains_config "AndroidPreview" "newest_ui" "true"
+
 	# Finish installation
 	update_android_cmdline
 	yes | sdkmanager "build-tools;33.0.1"
@@ -92,38 +98,99 @@ update_android_studio() {
 	yes | sdkmanager "platforms;android-33"
 	yes | sdkmanager "sources;android-33"
 	yes | sdkmanager "system-images;android-33;google_apis;x86_64"
-	avdmanager create avd -n "Pixel_3_API_33" -d "pixel_3" -k "system-images;android-33;google_apis;x86_64" &>/dev/null
-
-	# TODO: Change settings
-	# update_jetbrains_config "Android" "directory" "$deposit"
-	# update_jetbrains_config "Android" "font_size" "14"
-	# update_jetbrains_config "Android" "line_size" "1.5"
-	# [[ $release = can* ]] && update_jetbrains_config "AndroidPreview" "newest_ui" "true"
+	avdmanager create avd -n "Pixel_3_API_33" -d "pixel_3" -k "system-images;android-33;google_apis;x86_64" -f
 
 }
 
 update_chromium() {
 
 	# Handle parameters
-	cleaned=${1:-true}
-	deposit=${2:-$HOME/Downloads}
-	startup=${3:-about:blank}
+	deposit=${1:-$HOME/Downloads/DDL}
+	startup=${2:-about:blank}
 
 	# Update dependencies
 	sudo dnf install -y curl jq ydotool
 
 	# Update package
+	starter="/var/lib/flatpak/exports/bin/com.github.Eloston.UngoogledChromium"
+	present=$([[ -f "$starter" ]] && echo true || echo false)
 	sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+	sudo flatpak remote-modify --enable flathub
 	flatpak install -y flathub com.github.Eloston.UngoogledChromium
 
 	# Change environment
-	# configs="$HOME/.bashrc"
-	# if ! grep -q "CHROME_EXECUTABLE" "$configs" 2>/dev/null; then
-	# 	[[ -s "$configs" ]] || touch "$configs"
-	# 	[[ -z $(tail -1 "$configs") ]] || echo "" >>"$configs"
-	# 	echo 'export CHROME_EXECUTABLE="/usr/bin/chromium-freeworld"' >>"$configs"
-	# 	export CHROME_EXECUTABLE="/usr/bin/chromium-freeworld"
-	# fi
+	configs="$HOME/.bashrc"
+	if ! grep -q "CHROME_EXECUTABLE" "$configs" 2>/dev/null; then
+		[[ -s "$configs" ]] || touch "$configs"
+		[[ -z $(tail -1 "$configs") ]] || echo "" >>"$configs"
+		echo 'export CHROME_EXECUTABLE="/var/lib/flatpak/exports/bin/com.github.Eloston.UngoogledChromium"' >>"$configs"
+		export CHROME_EXECUTABLE="/var/lib/flatpak/exports/bin/com.github.Eloston.UngoogledChromium"
+	fi
+
+	# Finish installation
+	# INFO: Use sudo showkey -k to display keycodes
+	if [[ $present = false ]]; then
+
+		# Launch chromium
+		sleep 1 && (sudo ydotoold &) &>/dev/null
+		sleep 1 && (flatpak run com.github.Eloston.UngoogledChromium &) &>/dev/null
+		sleep 4 && sudo ydotool key 125:1 103:1 103:0 125:0
+
+		# Change deposit
+		mkdir -p "$deposit"
+		sleep 1 && sudo ydotool key 29:1 38:1 38:0 29:0
+		sleep 1 && sudo ydotool type "chrome://settings/" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool type "before downloading" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && for i in $(seq 1 3); do sleep 0.5 && sudo ydotool key 15:1 15:0; done && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool key 56:1 15:1 15:0 56:0 && sleep 1 && sudo ydotool key 56:1 15:1 15:0 56:0
+		sleep 1 && sudo ydotool key 29:1 38:1 38:0 29:0 && sleep 1 && sudo ydotool type "$deposit" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool key 15:1 15:0 && sleep 1 && sudo ydotool key 28:1 28:0
+
+		# Change engine
+		sleep 1 && sudo ydotool key 29:1 38:1 38:0 29:0
+		sleep 1 && sudo ydotool type "chrome://settings/" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool type "search engines" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && for i in $(seq 1 3); do sleep 0.5 && sudo ydotool key 15:1 15:0; done && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool type "duckduckgo" && sleep 1 && sudo ydotool key 28:1 28:0
+
+		# Change custom-ntp
+		sleep 1 && sudo ydotool key 29:1 38:1 38:0 29:0
+		sleep 1 && sudo ydotool type "chrome://flags/" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool type "custom-ntp" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && for i in $(seq 1 5); do sleep 0.5 && sudo ydotool key 15:1 15:0; done
+		sleep 1 && sudo ydotool key 29:1 30:1 30:0 29:0 && sleep 1 && sudo ydotool type "$startup"
+		sleep 1 && for i in $(seq 1 2); do sleep 0.5 && sudo ydotool key 15:1 15:0; done && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool key 108:1 108:0 && sleep 1 && sudo ydotool key 28:1 28:0
+
+		# Change extension-mime-request-handling
+		sleep 1 && sudo ydotool key 29:1 38:1 38:0 29:0
+		sleep 1 && sudo ydotool type "chrome://flags/" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool type "extension-mime-request-handling" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && for i in $(seq 1 6); do sleep 0.5 && sudo ydotool key 15:1 15:0; done && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && for i in $(seq 1 2); do sleep 0.5 && sudo ydotool key 108:1 108:0; done && sleep 1 && sudo ydotool key 28:1 28:0
+
+		# Change hide-sidepanel-button
+		sleep 1 && sudo ydotool key 29:1 38:1 38:0 29:0
+		sleep 1 && sudo ydotool type "chrome://flags/" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool type "hide-sidepanel-button" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && for i in $(seq 1 6); do sleep 0.5 && sudo ydotool key 15:1 15:0; done && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool key 108:1 108:0 && sleep 1 && sudo ydotool key 28:1 28:0
+
+		# Change remove-tabsearch-button
+		sleep 1 && sudo ydotool key 29:1 38:1 38:0 29:0
+		sleep 1 && sudo ydotool type "chrome://flags/" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool type "remove-tabsearch-button" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && for i in $(seq 1 6); do sleep 0.5 && sudo ydotool key 15:1 15:0; done && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool key 108:1 108:0 && sleep 1 && sudo ydotool key 28:1 28:0
+
+		# Change show-avatar-button
+		sleep 1 && sudo ydotool key 29:1 38:1 38:0 29:0
+		sleep 1 && sudo ydotool type "chrome://flags/" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && sudo ydotool type "show-avatar-button" && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && for i in $(seq 1 6); do sleep 0.5 && sudo ydotool key 15:1 15:0; done && sleep 1 && sudo ydotool key 28:1 28:0
+		sleep 1 && for i in $(seq 1 3); do sleep 0.5 && sudo ydotool key 108:1 108:0; done && sleep 1 && sudo ydotool key 28:1 28:0
+
+	fi
 
 }
 
@@ -135,7 +202,7 @@ update_chromium_extension() {
 
 update_flutter() {
 
-	# Update flutter
+	# Update package
 	deposit="$HOME/Android/Flutter" && mkdir -p "$deposit"
 	git clone "https://github.com/flutter/flutter.git" -b stable "$deposit"
 
@@ -159,10 +226,12 @@ update_flutter() {
 	# update_jetbrains_plugin "AndroidStudio" "6351"  # Dart
 	# update_jetbrains_plugin "AndroidStudio" "9212"  # Flutter
 
-	# Update vscode extensions
-	code --install-extension "dart-code.flutter" &>/dev/null
-	code --install-extension "RichardCoutts.mvvm-plus" &>/dev/null
-	
+	# Update vscodium
+	present=$([[ -x "$(which codium)" ]] && echo true || echo false)
+	if [[ $present = false ]]; then
+		codium --install-extension "dart-code.flutter" &>/dev/null
+		codium --install-extension "RichardCoutts.mvvm-plus" &>/dev/null
+	fi
 
 }
 
@@ -192,8 +261,9 @@ update_jdownloader() {
 	# Update dependencies
 	sudo dnf install -y flatpak jq moreutils
 	sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+	sudo flatpak remote-modify --enable flathub
 
-	# Update jdownloader
+	# Update package
 	flatpak install --assumeyes flathub org.jdownloader.JDownloader
 
 	# Create deposit
@@ -382,6 +452,18 @@ update_mamba() {
 
 }
 
+update_nvidia() {
+
+	# Update package
+	sudo dnf install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm"
+	sudo dnf install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
+	sudo dnf upgrade --refresh -y && sudo dnf install -y akmod-nvidia
+
+	# Update cuda
+	sudo dnf install -y xorg-x11-drv-nvidia-cuda
+	
+}
+
 update_scrcpy() {
 
 	# Update package
@@ -392,30 +474,51 @@ update_scrcpy() {
 
 update_system() {
 
+	# Change hostname
+	hostnamectl hostname fedhogen
+
+	# Change timezone
+	sudo unlink "/etc/localtime"
+	sudo ln -s "/usr/share/zoneinfo/Europe/Brussels" "/etc/localtime"
+
+	# Update system
+	sudo dnf upgrade --refresh
+	sudo dnf check && sudo dnf autoremove -y
+
+	# Update firmware
+	sudo fwupdmgr get-devices && sudo fwupdmgr refresh --force
+	sudo fwupdmgr get-updates && sudo fwupdmgr update -y
+
 	# Change extensions
 	gnome-extensions disable background-logo@fedorahosted.org
 	gnome-extensions enable places-menu@gnome-shell-extensions.gcampax.github.com
 
-	# Change font rendering
+	# Change fonts
+	sudo dnf install -y cascadia-fonts-all
 	gsettings set org.gnome.desktop.interface font-antialiasing "rgba"
 	gsettings set org.gnome.desktop.interface font-hinting "slight"
-
-	# Change font
-	sudo dnf install -y cascadia-fonts-all
 	gsettings set org.gnome.desktop.interface monospace-font-name "Cascadia Mono PL Semi-Bold 10"
-	# gsettings set org.gnome.desktop.interface monospace-font-name "Roboto Mono Medium 10"
-	# gsettings set org.gnome.desktop.interface monospace-font-name "Source Code Pro Semi-Bold 10"
 
 	# Change icons
 	sudo dnf install -y papirus-icon-theme
 	gsettings set org.gnome.desktop.interface icon-theme "Papirus"
 
-	# Enable remote desktop
+	# Enable night-light
+	gsettings set org.gnome.settings-daemon.plugins.color night-light-enabled true
+	gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-from 0
+	gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-to 0
+	gsettings set org.gnome.settings-daemon.plugins.color night-light-temperature 5000
+
+	# Enable remote-desktop
 	systemctl --user enable --now gnome-remote-desktop.service
 	gsettings set org.gnome.desktop.remote-desktop.rdp tls-cert "$HOME/.local/share/gnome-remote-desktop/rdp-tls.crt"
 	gsettings set org.gnome.desktop.remote-desktop.rdp tls-key "$HOME/.local/share/gnome-remote-desktop/rdp-tls.key"
 	gsettings set org.gnome.desktop.remote-desktop.rdp enable true
 	gsettings set org.gnome.desktop.remote-desktop.vnc view-only false
+
+	# Remove services
+	sudo systemctl disable --now ModemManager.service
+	sudo systemctl disable --now NetworkManager-wait-online.service
 
 }
 
@@ -494,15 +597,17 @@ main() {
 
 	# Handle functions
 	factors=(
-		"update_android_studio"
+		# "update_android_studio"
 		# "update_android_studio canary"
-		"update_chromium"
-		"update_git main sharpordie@outlook.com sharpordie"
-		"update_vscodium"
-		"update_flutter"
-		"update_jdownloader"
-		"update_mamba"
-		"update_system"
+		# "update_chromium"
+		# "update_git main sharpordie@outlook.com sharpordie"
+		# "update_vscodium"
+		# "update_flutter"
+		# "update_jdownloader"
+		# "update_mamba"
+		"update_nvidia"
+		# "update_scrcpy"
+		# "update_system"
 	)
 
 	# Output progress
