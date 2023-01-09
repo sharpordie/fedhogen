@@ -6,7 +6,7 @@ Opinionated post-installation script for Fedora.
 
 # <samp>GUIDANCE<samp>
 
-### Single-command installation
+## Single-command installation
 
 Running this blindly is strongly discouraged.
 
